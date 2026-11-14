@@ -975,6 +975,88 @@
       color: var(--text-muted);
     }
 
+    
+    /* View Mode Switcher (Grille vs Liste) */
+    .view-mode-toggle {
+      display: flex;
+      align-items: center;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 2px;
+      gap: 2px;
+    }
+
+    .btn-view-mode {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      padding: 5px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+
+    .btn-view-mode:hover {
+      color: var(--text-main);
+    }
+
+    .btn-view-mode.active {
+      background: var(--bg-surface);
+      color: var(--primary);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    }
+
+    /* List View for Dashboard */
+    .dashboard-grid.list-view {
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    .dashboard-grid.list-view .tool-card {
+      flex-direction: row;
+      align-items: center;
+      padding: 14px 18px;
+    }
+
+    .dashboard-grid.list-view .tool-card-icon {
+      margin-bottom: 0;
+      margin-right: 14px;
+      width: 38px;
+      height: 38px;
+      flex-shrink: 0;
+    }
+
+    .dashboard-grid.list-view .tool-card > div:first-child {
+      display: flex;
+      align-items: center;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .dashboard-grid.list-view .tool-card-title {
+      margin-bottom: 0;
+      min-width: 170px;
+      font-size: 14.5px;
+    }
+
+    .dashboard-grid.list-view .tool-card-desc {
+      margin-bottom: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-left: 14px;
+      font-size: 12.5px;
+    }
+
+    .dashboard-grid.list-view .tool-card-footer {
+      flex-shrink: 0;
+      margin-left: 16px;
+    }
+
     /* Toast Notification */
     #toast-container {
       position: fixed;
@@ -1105,12 +1187,23 @@
         </div>
       </div>
 
-      <!-- Filtres par catégorie (Remplace la barre infinie défilante) -->
-      <div class="category-pills">
-        <button class="cat-pill active" data-filter="all">Tous (10)</button>
-        <button class="cat-pill" data-filter="pdf">PDF & Documents (5)</button>
-        <button class="cat-pill" data-filter="media">Médias & Optimisation (3)</button>
-        <button class="cat-pill" data-filter="share">Utilitaires & Partage (2)</button>
+      <!-- Filtres par catégorie & Sélecteur de Style d'affichage (Grille / Liste) -->
+      <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+        <div class="category-pills">
+          <button class="cat-pill active" data-filter="all">Tous (10)</button>
+          <button class="cat-pill" data-filter="pdf">PDF & Documents (5)</button>
+          <button class="cat-pill" data-filter="media">Médias & Optimisation (3)</button>
+          <button class="cat-pill" data-filter="share">Utilitaires & Partage (2)</button>
+        </div>
+
+        <div class="view-mode-toggle" title="Changer le style d'affichage des outils">
+          <button class="btn-view-mode active" id="view-mode-grid" title="Affichage Grille">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          </button>
+          <button class="btn-view-mode" id="view-mode-list" title="Affichage Liste Compacte">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -2085,6 +2178,20 @@
   </footer>
 
   <!-- Code Logique Applicatif Client -->
+  <!-- Command Palette Modal (Ctrl+K / /) -->
+  <div class="modal-overlay" id="palette-modal">
+    <div class="modal-box">
+      <div class="palette-search-wrap">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text-muted);"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" class="palette-input" id="palette-search-input" placeholder="Rechercher un outil (ex: signer, fusion, qr, compresseur, partage)..." autocomplete="off">
+        <button id="palette-close-btn" class="btn-action-sm" title="Fermer (Esc)" style="width:26px; height:26px; flex-shrink:0;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="palette-list" id="palette-results-list"></div>
+    </div>
+  </div>
+
   <script>
     // Configuration PDF.js Worker
     if (window.pdfjsLib) {
@@ -3425,7 +3532,6 @@ ${b}`;
   
     // ==========================================
     // ROUTEUR DE NAVIGATION MODERNE & COMMAND PALETTE
-    // ==========================================
     const toolsMeta = [
       { id: 'module-dashboard', name: 'Vue d\'ensemble (Accueil)', cat: 'all', desc: 'Grille de tous les utilitaires' },
       { id: 'module-merge', name: 'Fusionner PDF', cat: 'pdf', desc: 'Assembler plusieurs documents PDF' },
@@ -3440,7 +3546,10 @@ ${b}`;
       { id: 'module-share', name: 'Héberger & Partager', cat: 'share', desc: 'Lien direct et QR code de téléchargement' }
     ];
 
+    let currentActiveModule = 'module-dashboard';
+
     window.switchModule = function(targetId) {
+      currentActiveModule = targetId;
       const allPanes = document.querySelectorAll('.module-pane');
       allPanes.forEach(p => p.classList.remove('active'));
 
@@ -3459,6 +3568,20 @@ ${b}`;
 
       closePalette();
     };
+
+    // Gestion du sélecteur d'outil dans l'en-tête (Vue d'ensemble)
+    const toolPickerBtn = document.getElementById('open-tool-picker-btn');
+    if (toolPickerBtn) {
+      toolPickerBtn.addEventListener('click', () => {
+        if (currentActiveModule !== 'module-dashboard') {
+          // Si on est dans un outil, cliquer sur Vue d'ensemble ramène à l'accueil
+          switchModule('module-dashboard');
+        } else {
+          // Si on est déjà sur l'accueil, ouvre la palette de sélection
+          openPalette();
+        }
+      });
+    }
 
     // Bouton Accueil Fil d'Ariane & Bouton Hub En-tête
     const bcHomeBtn = document.getElementById('bc-home-btn');
@@ -3486,12 +3609,39 @@ ${b}`;
       });
     });
 
+    // Sélecteur de style d'affichage (Grille vs Liste)
+    const viewGridBtn = document.getElementById('view-mode-grid');
+    const viewListBtn = document.getElementById('view-mode-list');
+
+    function setViewMode(mode) {
+      const allGrids = document.querySelectorAll('.dashboard-grid');
+      if (mode === 'list') {
+        allGrids.forEach(g => g.classList.add('list-view'));
+        if (viewListBtn) viewListBtn.classList.add('active');
+        if (viewGridBtn) viewGridBtn.classList.remove('active');
+      } else {
+        allGrids.forEach(g => g.classList.remove('list-view'));
+        if (viewGridBtn) viewGridBtn.classList.add('active');
+        if (viewListBtn) viewListBtn.classList.remove('active');
+      }
+      try { localStorage.setItem('privadoc-view-mode', mode); } catch(e) {}
+    }
+
+    if (viewGridBtn) viewGridBtn.addEventListener('click', () => setViewMode('grid'));
+    if (viewListBtn) viewListBtn.addEventListener('click', () => setViewMode('list'));
+
+    // Restaurer le mode d'affichage sauvegardé
+    try {
+      const savedView = localStorage.getItem('privadoc-view-mode');
+      if (savedView === 'list') setViewMode('list');
+    } catch(e) {}
+
     // Command Palette Modal
     const paletteModal = document.getElementById('palette-modal');
     const paletteInput = document.getElementById('palette-search-input');
     const paletteResults = document.getElementById('palette-results-list');
     const paletteTrigger = document.getElementById('palette-trigger-btn');
-    const toolPickerBtn = document.getElementById('open-tool-picker-btn');
+    const paletteCloseBtn = document.getElementById('palette-close-btn');
 
     function openPalette() {
       if (paletteModal) {
@@ -3509,7 +3659,7 @@ ${b}`;
     }
 
     if (paletteTrigger) paletteTrigger.addEventListener('click', openPalette);
-    if (toolPickerBtn) toolPickerBtn.addEventListener('click', openPalette);
+    if (paletteCloseBtn) paletteCloseBtn.addEventListener('click', closePalette);
 
     if (paletteModal) {
       paletteModal.addEventListener('click', (e) => {
@@ -3562,7 +3712,7 @@ ${b}`;
       });
     }
 
-    // Raccourci Ctrl+K ou / pour ouvrir la palette
+    // Raccourcis clavier : Ctrl+K ou / pour la recherche, Escape pour fermer
     window.addEventListener('keydown', (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
@@ -3579,17 +3729,5 @@ ${b}`;
 
   </script>
 
-  <!-- Command Palette Modal (Ctrl+K / /) -->
-  <div class="modal-overlay" id="palette-modal">
-    <div class="modal-box">
-      <div class="palette-search-wrap">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text-muted);"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input type="text" class="palette-input" id="palette-search-input" placeholder="Rechercher un outil (ex: signer, fusion, qr, compresseur, partage)..." autocomplete="off">
-        <kbd style="font-size:11px; color:var(--text-muted); background:var(--bg-elevated); padding:2px 6px; border-radius:4px; border:1px solid var(--border);">Esc</kbd>
-      </div>
-      <div class="palette-list" id="palette-results-list"></div>
-    </div>
-  </div>
-
-</body>
+  </body>
 </html>
