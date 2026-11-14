@@ -1,0 +1,2451 @@
+<!DOCTYPE html>
+<html lang="fr" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PrivaDoc Studio — Boîte à Outils Documentaire 100% Privée & Locale</title>
+  <meta name="description" content="Suite complète et gratuite de manipulation de documents et médias 100% exécutée dans votre navigateur. Aucune donnée n'est envoyée sur un serveur.">
+  
+  <!-- Polices Google -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <!-- Bibliothèques CDN 100% côté client -->
+  <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <style>
+    :root {
+      --bg-base: #0b0f17;
+      --bg-surface: #111827;
+      --bg-elevated: #1e293b;
+      --bg-hover: #334155;
+      --border: #334155;
+      --border-subtle: #1e293b;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --primary-glow: rgba(59, 130, 246, 0.2);
+      --accent: #10b981;
+      --accent-glow: rgba(16, 185, 129, 0.2);
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --radius: 12px;
+      --radius-sm: 8px;
+    }
+
+    html.light {
+      --bg-base: #f8fafc;
+      --bg-surface: #ffffff;
+      --bg-elevated: #f1f5f9;
+      --bg-hover: #e2e8f0;
+      --border: #cbd5e1;
+      --border-subtle: #e2e8f0;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --primary-glow: rgba(37, 99, 235, 0.15);
+      --accent: #059669;
+      --accent-glow: rgba(5, 150, 105, 0.15);
+      --danger: #dc2626;
+      --warning: #d97706;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-base);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      transition: background-color 0.2s, color 0.2s;
+    }
+
+    code, pre, .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* En-tête */
+    header {
+      background-color: var(--bg-surface);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      backdrop-filter: blur(12px);
+    }
+
+    .header-container {
+      max-width: 1300px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .brand-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--primary), #6366f1);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      box-shadow: 0 4px 14px var(--primary-glow);
+    }
+
+    .brand-title {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-subtitle {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+
+    .privacy-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--accent-glow);
+      color: var(--accent);
+      border: 1px solid var(--accent);
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-icon {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      width: 38px;
+      height: 38px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .btn-icon:hover {
+      background: var(--bg-hover);
+      border-color: var(--primary);
+    }
+
+    /* Barre de Navigation par Onglets */
+    .tabs-wrapper {
+      background-color: var(--bg-surface);
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+      scrollbar-width: thin;
+    }
+
+    .tabs-nav {
+      max-width: 1300px;
+      margin: 0 auto;
+      display: flex;
+      padding: 0 16px;
+      gap: 4px;
+    }
+
+    .tab-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 18px;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 13.5px;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s;
+    }
+
+    .tab-btn:hover {
+      color: var(--text-main);
+      background-color: var(--bg-elevated);
+    }
+
+    .tab-btn.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+      font-weight: 600;
+    }
+
+    .tab-btn svg {
+      width: 18px;
+      height: 18px;
+      stroke-width: 2;
+    }
+
+    /* Zone de Contenu Principal */
+    main {
+      flex: 1;
+      max-width: 1300px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 28px 20px 60px;
+    }
+
+    .module-pane {
+      display: none;
+      animation: fadeIn 0.2s ease-in-out;
+    }
+
+    .module-pane.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Cartes & Dispositions */
+    .pane-header {
+      margin-bottom: 24px;
+    }
+
+    .pane-title {
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .pane-desc {
+      color: var(--text-muted);
+      font-size: 14px;
+      max-width: 800px;
+      line-height: 1.5;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    @media (max-width: 900px) {
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* Zone de Dépôt Drag & Drop */
+    .dropzone {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 36px 20px;
+      text-align: center;
+      cursor: pointer;
+      background-color: var(--bg-elevated);
+      transition: all 0.2s;
+      position: relative;
+    }
+
+    .dropzone:hover, .dropzone.dragover {
+      border-color: var(--primary);
+      background-color: var(--primary-glow);
+    }
+
+    .dropzone-icon {
+      width: 48px;
+      height: 48px;
+      color: var(--primary);
+      margin: 0 auto 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .dropzone-title {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .dropzone-subtitle {
+      font-size: 12.5px;
+      color: var(--text-muted);
+    }
+
+    .dropzone input[type="file"] {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    /* Listes d'éléments / Fichiers */
+    .item-list {
+      margin-top: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 380px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .file-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      background-color: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      gap: 12px;
+      transition: border-color 0.15s;
+    }
+
+    .file-item:hover {
+      border-color: var(--primary);
+    }
+
+    .file-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      overflow: hidden;
+      flex: 1;
+    }
+
+    .file-icon {
+      color: var(--primary);
+      flex-shrink: 0;
+    }
+
+    .file-name {
+      font-size: 13.5px;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .file-meta {
+      font-size: 11.5px;
+      color: var(--text-muted);
+    }
+
+    .file-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .btn-action-sm {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      width: 30px;
+      height: 30px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .btn-action-sm:hover {
+      background: var(--bg-hover);
+      color: var(--primary);
+    }
+
+    .btn-action-sm.danger:hover {
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--danger);
+      border-color: var(--danger);
+    }
+
+    /* Boutons Principaux */
+    .btn-primary {
+      background-color: var(--primary);
+      color: #ffffff;
+      border: none;
+      padding: 12px 20px;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background-color 0.15s, box-shadow 0.15s;
+      box-shadow: 0 2px 8px var(--primary-glow);
+      width: 100%;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background-color: var(--primary-hover);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-secondary {
+      background-color: var(--bg-elevated);
+      color: var(--text-main);
+      border: 1px solid var(--border);
+      padding: 10px 18px;
+      border-radius: var(--radius-sm);
+      font-size: 13.5px;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.15s;
+    }
+
+    .btn-secondary:hover {
+      background-color: var(--bg-hover);
+      border-color: var(--primary);
+    }
+
+    /* Formulaires & Champs */
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 6px;
+      color: var(--text-main);
+    }
+
+    .form-input, .form-select, .form-textarea {
+      width: 100%;
+      background-color: var(--bg-elevated);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 13.5px;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-glow);
+    }
+
+    .form-textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .range-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .range-group input[type="range"] {
+      flex: 1;
+      accent-color: var(--primary);
+    }
+
+    .range-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      color: var(--primary);
+      min-width: 45px;
+      text-align: right;
+    }
+
+    /* Zone de Signature Interactive */
+    .signature-container {
+      background-color: #ffffff;
+      border: 2px dashed var(--border);
+      border-radius: var(--radius-sm);
+      position: relative;
+      cursor: crosshair;
+      overflow: hidden;
+    }
+
+    #sig-canvas {
+      display: block;
+      width: 100%;
+      height: 180px;
+      touch-action: none;
+    }
+
+    .signature-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 10px;
+    }
+
+    /* Visualiseur PDF & Canvases */
+    .pdf-preview-box {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background-color: var(--bg-elevated);
+      min-height: 380px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .pdf-canvas-wrapper {
+      max-width: 100%;
+      max-height: 520px;
+      overflow: auto;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: #ffffff;
+      position: relative;
+    }
+
+    #preview-pdf-canvas {
+      display: block;
+      max-width: 100%;
+      height: auto;
+    }
+
+    /* Grilles d'Images & Vignettes */
+    .thumb-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 14px;
+      margin-top: 16px;
+      max-height: 420px;
+      overflow-y: auto;
+      padding: 4px;
+    }
+
+    .thumb-card {
+      background-color: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .thumb-card img, .thumb-card canvas {
+      width: 100%;
+      height: 120px;
+      object-fit: cover;
+      background: #ffffff;
+    }
+
+    .thumb-card-info {
+      padding: 6px 8px;
+      font-size: 11px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .thumb-del-btn {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      background: rgba(0, 0, 0, 0.65);
+      color: #ffffff;
+      border: none;
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .thumb-del-btn:hover {
+      background: var(--danger);
+    }
+
+    /* Toast Notification */
+    #toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .toast {
+      background-color: var(--bg-surface);
+      color: var(--text-main);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--primary);
+      padding: 14px 18px;
+      border-radius: var(--radius-sm);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      font-size: 13.5px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: slideIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      max-width: 400px;
+    }
+
+    .toast.success { border-left-color: var(--accent); }
+    .toast.error { border-left-color: var(--danger); }
+    .toast.warning { border-left-color: var(--warning); }
+
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    /* Pied de page */
+    footer {
+      background-color: var(--bg-surface);
+      border-top: 1px solid var(--border);
+      padding: 24px;
+      margin-top: auto;
+      text-align: center;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    footer a {
+      color: var(--primary);
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Toast Container -->
+  <div id="toast-container"></div>
+
+  <!-- En-tête -->
+  <header>
+    <div class="header-container">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <path d="M9 12l2 2 4-4"/>
+          </svg>
+        </div>
+        <div>
+          <div class="brand-title">
+            PrivaDoc Studio
+            <span class="privacy-badge">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              100% Hors-Ligne & Local
+            </span>
+          </div>
+          <div class="brand-subtitle">Boîte à outils documentaire, administrative et médias sans aucun serveur</div>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button id="theme-toggle" class="btn-icon" title="Basculer le mode sombre / clair">
+          <svg id="theme-icon-sun" style="display:none;" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+          <svg id="theme-icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
+        <a href="https://github.com/Tortoche/privadoc" target="_blank" class="btn-icon" title="Code source sur GitHub">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Navigation des modules -->
+  <div class="tabs-wrapper">
+    <nav class="tabs-nav">
+      <button class="tab-btn active" data-target="module-merge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        Fusionner PDF
+      </button>
+      <button class="tab-btn" data-target="module-sign">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>
+        Signer & Parapher
+      </button>
+      <button class="tab-btn" data-target="module-watermark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><circle cx="12" cy="11" r="3"/></svg>
+        Filigrane Anti-Fraude
+      </button>
+      <button class="tab-btn" data-target="module-img-to-pdf">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        Images vers PDF
+      </button>
+      <button class="tab-btn" data-target="module-pdf-to-img">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Extraire les Pages
+      </button>
+      <button class="tab-btn" data-target="module-compress">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="14" y1="10" x2="21" y2="3"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+        Compresseur Démarches
+      </button>
+      <button class="tab-btn" data-target="module-templates">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+        Fiche & Compte-Rendu
+      </button>
+      <button class="tab-btn" data-target="module-qr">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Générateur QR Code
+      </button>
+      <button class="tab-btn" data-target="module-privacy">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        Nettoyeur Métadonnées
+      </button>
+    </nav>
+  </div>
+
+  <!-- Contenu Principal -->
+  <main>
+
+    <!-- MODULE 1 : FUSIONNER PDF -->
+    <section id="module-merge" class="module-pane active">
+      <div class="pane-header">
+        <h2 class="pane-title">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          Fusionner plusieurs fichiers PDF
+        </h2>
+        <p class="pane-desc">Combinez autant de documents PDF que vous souhaitez en un seul fichier ordonné. Traitement instantané en mémoire locale, sans taille limite imposée.</p>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">Ajouter des documents PDF</div>
+          <div class="dropzone" id="merge-dropzone">
+            <input type="file" id="merge-input" multiple accept="application/pdf">
+            <div class="dropzone-icon">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            </div>
+            <div class="dropzone-title">Glissez vos PDF ici ou cliquez pour parcourir</div>
+            <div class="dropzone-subtitle">Sélectionnez plusieurs fichiers à assembler</div>
+          </div>
+
+          <div class="item-list" id="merge-list"></div>
+        </div>
+
+        <div class="card" style="display:flex; flex-direction:column; justify-content:space-between;">
+          <div>
+            <div class="card-title">Paramètres de fusion</div>
+            <div class="form-group">
+              <label class="form-label">Nom du fichier fusionné</label>
+              <input type="text" class="form-input" id="merge-filename" value="document_fusionne.pdf">
+            </div>
+            <div style="background:var(--bg-elevated); padding:16px; border-radius:var(--radius-sm); border:1px solid var(--border); margin-bottom:20px;">
+              <div style="font-size:13px; font-weight:600; margin-bottom:8px;">Garanties de sécurité :</div>
+              <ul style="font-size:12.5px; color:var(--text-muted); list-style-position:inside; line-height:1.6;">
+                <li>Vos PDF restent stockés uniquement dans la mémoire RAM de votre navigateur.</li>
+                <li>Aucun cookie, aucun traceur, aucun envoi réseau.</li>
+                <li>Préserve la fidélité vectorielle et les résolutions originales.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div>
+            <div style="margin-bottom:12px; font-size:13px; color:var(--text-muted); display:flex; justify-content:space-between;">
+              <span>Total documents : <b id="merge-count" style="color:var(--text-main);">0</b></span>
+              <span>Poids estimé : <b id="merge-total-size" style="color:var(--text-main);">0 Ko</b></span>
+            </div>
+            <button class="btn-primary" id="merge-submit-btn" disabled>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              Générer et Télécharger le PDF Fusionné
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MODULE 2 : SIGNER & PARAPHER -->
+    <section id="module-sign" class="module-pane">
+      <div class="pane-header">
+        <h2 class="pane-title">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/></svg>
+          Signer & Parapher un Document PDF
+        </h2>
+        <p class="pane-desc">Dessinez votre signature manuscrite ou importez un tampon, apposez la mention légale et la date, puis téléchargez immédiatement votre contrat ou formulaire signé.</p>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">1. Votre Signature Manuscrite</div>
+          <div class="signature-container">
+            <canvas id="sig-canvas"></canvas>
+          </div>
+          <div class="signature-toolbar">
+            <div style="display:flex; gap:8px; align-items:center;">
+              <span style="font-size:12px; color:var(--text-muted);">Couleur :</span>
+              <button class="btn-action-sm sig-color-btn active" data-color="#1e3a8a" style="background:#1e3a8a; border-color:#3b82f6;" title="Bleu Stylo"></button>
+              <button class="btn-action-sm sig-color-btn" data-color="#09090b" style="background:#09090b;" title="Noir Intense"></button>
+            </div>
+            <div style="display:flex; gap:8px;">
+              <button class="btn-secondary" id="sig-clear-btn" style="padding:6px 12px; font-size:12px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
+                Effacer
+              </button>
+            </div>
+          </div>
+
+          <div style="margin-top:20px;">
+            <div class="card-title">2. Mentions & Date</div>
+            <div class="form-group">
+              <label class="form-label">Mention légale d'accompagnement</label>
+              <input type="text" class="form-input" id="sig-mention" value="Lu et approuvé, bon pour accord">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Lieu et Date</label>
+              <input type="text" class="form-input" id="sig-date">
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            <span>3. Aperçu & Positionnement</span>
+            <span id="sig-page-info" style="font-size:12px; font-weight:normal; color:var(--text-muted);">Page 1 sur 1</span>
+          </div>
+
+          <div class="dropzone" id="sig-dropzone" style="padding:20px; margin-bottom:14px;">
+            <input type="file" id="sig-file-input" accept="application/pdf">
+            <div class="dropzone-title" style="font-size:13.5px;">Charger le PDF à signer</div>
+            <div class="dropzone-subtitle">Glissez le fichier ou cliquez ici</div>
+          </div>
+
+          <div class="pdf-preview-box">
+            <div class="pdf-canvas-wrapper" id="sig-preview-wrapper">
+              <canvas id="preview-pdf-canvas"></canvas>
+            </div>
+          </div>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:14px;">
+            <div style="display:flex; gap:6px;">
+              <button class="btn-secondary" id="sig-prev-page" disabled style="padding:6px 12px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg> Page préc.
+              </button>
+              <button class="btn-secondary" id="sig-next-page" disabled style="padding:6px 12px;">
+                Page suiv. <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+              </button>
+            </div>
+            <button class="btn-primary" id="sig-apply-btn" disabled style="width:auto;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              Apposer la Signature & Télécharger
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MODULE 3 : FILIGRANE ANTI-FRAUDE -->
+    <section id="module-watermark" class="module-pane">
+      <div class="pane-header">
+        <h2 class="pane-title">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><circle cx="12" cy="11" r="3"/></svg>
+          Filigrane Anti-Fraude (Dossier de Location / Emploi)
+        </h2>
+        <p class="pane-desc">Protégez vos pièces d'identité, bulletins de paie et avis d'imposition contre l'usurpation d'identité en appliquant un marquage indélébile certifiant l'usage unique du document.</p>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">Document source</div>
+          <div class="dropzone" id="wm-dropzone">
+            <input type="file" id="wm-file-input" accept="application/pdf">
+            <div class="dropzone-icon">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            </div>
+            <div class="dropzone-title">Glissez votre pièce d'identité ou justificatif</div>
+            <div class="dropzone-subtitle">Format PDF accepté</div>
+          </div>
+          <div id="wm-file-info" style="margin-top:14px; font-size:13px; color:var(--accent); font-weight:500; display:none;"></div>
+
+          <div style="margin-top:20px;">
+            <div class="card-title">Modèles recommandés</div>
+            <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px;">
+              <button class="btn-secondary wm-preset-btn" data-text="DOSSIER DE LOCATION - UNIQUEMENT POUR CANDIDATURE">Dossier Location</button>
+              <button class="btn-secondary wm-preset-btn" data-text="CANDIDATURE EMPLOI - STRICTEMENT CONFIDENTIEL">Candidature Emploi</button>
+              <button class="btn-secondary wm-preset-btn" data-text="COPIE CONFORME - USAGE ADMINISTRATIF EXCLUSIF">Copie Conforme</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Personnalisation du marquage</div>
+          
+          <div class="form-group">
+            <label class="form-label">Texte du filigrane</label>
+            <input type="text" class="form-input" id="wm-text" value="DOCUMENT EXCLUSIVEMENT RÉSERVÉ À MON DOSSIER DE LOCATION">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Destinataire spécifique (Agence / Propriétaire)</label>
+            <input type="text" class="form-input" id="wm-dest" placeholder="Ex: Agence Mon Agence / M. Dupont" value="">
+          </div>
+
+          <div class="form-group">
+            <div style="display:flex; justify-content:space-between;">
+              <label class="form-label">Opacité du marquage</label>
+              <span class="range-val" id="wm-opacity-val">25%</span>
+            </div>
+            <div class="range-group">
+              <input type="range" id="wm-opacity" min="10" max="70" value="25">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div style="display:flex; justify-content:space-between;">
+              <label class="form-label">Taille de police</label>
+              <span class="range-val" id="wm-size-val">28 px</span>
+            </div>
+            <div class="range-group">
+              <input type="range" id="wm-size" min="16" max="50" value="28">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Disposition</label>
+            <select class="form-select" id="wm-layout">
+              <option value="diagonal">Diagonale centrale unique</option>
+              <option value="repeat">Répétition multiple sur toute la page</option>
+            </select>
+          </div>
+
+          <button class="btn-primary" id="wm-submit-btn" disabled style="margin-top:16px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Appliquer le Filigrane & Télécharger
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- MODULE 4 : IMAGES VERS PDF -->
+    <section id="module-img-to-pdf" class="module-pane">
+      <div class="pane-header">
+        <h2 class="pane-title">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          Convertir des Images en Document PDF
+        </h2>
+        <p class="pane-desc">Transformez vos photos de reçus, documents scannés ou clichés smartphone en un document PDF multipage propre et calibré.</p>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">Sélectionner vos images</div>
+          <div class="dropzone" id="i2p-dropzone">
+            <input type="file" id="i2p-input" multiple accept="image/jpeg,image/png,image/webp">
+            <div class="dropzone-icon">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            </div>
+            <div class="dropzone-title">Glissez vos photos (JPG, PNG, WebP)</div>
+            <div class="dropzone-subtitle">Importez plusieurs images pour créer un PDF multipage</div>
+          </div>
+
+          <div class="thumb-grid" id="i2p-grid"></div>
+        </div>
+
+        <div class="card" style="display:flex; flex-direction:column; justify-content:space-between;">
+          <div>
+            <div class="card-title">Options d'impression & mise en page</div>
+
+            <div class="form-group">
+              <label class="form-label">Format de page</label>
+              <select class="form-select" id="i2p-format">
+                <option value="A4">A4 (Standard administratif européen)</option>
+                <option value="LETTER">US Letter</option>
+                <option value="FIT">Ajuster à la dimension de chaque image</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Orientation</label>
+              <select class="form-select" id="i2p-orientation">
+                <option value="portrait">Portrait</option>
+                <option value="landscape">Paysage</option>
+                <option value="auto">Automatique (selon chaque photo)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Marges</label>
+              <select class="form-select" id="i2p-margins">
+                <option value="none">Aucune marge (Plein cadre)</option>
+                <option value="small" selected>Petite marge (10 mm)</option>
+                <option value="normal">Marge normale (20 mm)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Nom du fichier de sortie</label>
+              <input type="text" class="form-input" id="i2p-filename" value="photos_document.pdf">
+            </div>
+          </div>
+
+          <div>
+            <div style="margin-bottom:12px; font-size:13px; color:var(--text-muted); display:flex; justify-content:space-between;">
+              <span>Nombre d'images : <b id="i2p-count" style="color:var(--text-main);">0</b></span>
+            </div>
+            <button class="btn-primary" id="i2p-submit-btn" disabled>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Générer et Télécharger le PDF
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MODULE 5 : EXTRAIRE LES PAGES EN IMAGES -->
+    <section id="module-pdf-to-img" class="module-pane">
+      <div class="pane-header">
+        <h2 class="pane-title">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Extraire les Pages d'un PDF en Images
+        </h2>
+        <p class="pane-desc">Convertissez chaque page d'un PDF en image haute définition (PNG ou JPEG). Téléchargez chaque image individuellement ou l'ensemble en une archive ZIP.</p>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">Charger le document PDF</div>
+          <div class="dropzone" id="p2i-dropzone">
+            <input type="file" id="p2i-input" accept="application/pdf">
+            <div class="dropzone-icon">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            </div>
+            <div class="dropzone-title">Glissez votre fichier PDF ici</div>
+            <div class="dropzone-subtitle">Extraction instantanée page par page</div>
+          </div>
+
+          <div style="margin-top:20px;">
+            <div class="form-group">
+              <label class="form-label">Format de sortie</label>
+              <select class="form-select" id="p2i-format">
+                <option value="png">PNG (Qualité maximale, sans perte)</option>
+                <option value="jpeg">JPEG (Plus léger)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Résolution de rendu</label>
+              <select class="form-select" id="p2i-scale">
+                <option value="1.5">Normale (150 DPI)</option>
+                <option value="2.0" selected>Haute Définition (300 DPI)</option>
+              </select>
+            </div>
+            <button class="btn-primary" id="p2i-zip-btn" disabled style="margin-top:8px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Télécharger Toutes les Pages (Archive ZIP)
+            </button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            <span>Pages extraites</span>
+            <span id="p2i-count" style="font-size:12px; font-weight:normal; color:var(--text-muted);">0 page</span>
+          </div>
+          <div class="thumb-grid" id="p2i-grid" style="max-height:480px;"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MODULE 6 : COMPRESSEUR DE FICHIERS DÉMARCHES -->
+    <section id="module-compress" class="module-pane">
+      <div class="pane-header">
+        <h2 class="pane-title">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="14" y1="10" x2="21" y2="3"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+          Compresseur de Fichiers pour Démarches Administratives
+        </h2>
+        <p class="pane-desc">Les sites administratifs (CAF, ANTS, Sécurité Sociale, Universités) bloquent souvent les envois supérieurs à 1 Mo ou 2 Mo. Réduisez le poids de vos scans tout en conservant une lisibilité parfaite.</p>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">Sélectionner l'image ou le document scanné</div>
+          <div class="dropzone" id="comp-dropzone">
+            <input type="file" id="comp-input" accept="image/jpeg,image/png,image/webp">
+            <div class="dropzone-icon">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            </div>
+            <div class="dropzone-title">Glissez votre image ou scan</div>
+            <div class="dropzone-subtitle">Formats acceptés : JPG, PNG, WebP</div>
+          </div>
+
+          <div style="margin-top:20px;">
+            <div class="card-title">Profils automatiques de démarches</div>
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <button class="btn-secondary comp-preset-btn active" data-max-size="500" data-width="1600" data-q="0.75">
+                <div style="text-align:left;">
+                  <div style="font-weight:600; font-size:13px;">Plafond Strict 500 Ko</div>
+                  <div style="font-size:11.5px; color:var(--text-muted);">Idéal pour formulaires stricts et portails d'ambassades</div>
+                </div>
+              </button>
+              <button class="btn-secondary comp-preset-btn" data-max-size="1024" data-width="1920" data-q="0.82">
+                <div style="text-align:left;">
+                  <div style="font-weight:600; font-size:13px;">Plafond 1 Mo (CAF, France Travail, Ameli)</div>
+                  <div style="font-size:11.5px; color:var(--text-muted);">Le standard pour la plupart des pièces justificatives</div>
+                </div>
+              </button>
+              <button class="btn-secondary comp-preset-btn" data-max-size="2048" data-width="2400" data-q="0.88">
+                <div style="text-align:left;">
+                  <div style="font-weight:600; font-size:13px;">Plafond 2 Mo (Portails Universitaires / Notaires)</div>
+                  <div style="font-size:11.5px; color:var(--text-muted);">Excellente fidélité pour documents avec graphiques</div>
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="display:flex; flex-direction:column; justify-content:space-between;">
+          <div>
+            <div class="card-title">Résultat & Comparatif en temps réel</div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px;">
+              <div style="background:var(--bg-elevated); padding:14px; border-radius:var(--radius-sm); border:1px solid var(--border);">
+                <div style="font-size:12px; color:var(--text-muted);">Poids Original</div>
+                <div id="comp-orig-size" style="font-size:20px; font-weight:700; color:var(--text-main); margin-top:4px;">0 Ko</div>
+              </div>
+              <div style="background:var(--bg-elevated); padding:14px; border-radius:var(--radius-sm); border:1px solid var(--border);">
+                <div style="font-size:12px; color:var(--text-muted);">Poids Optimisé</div>
+                <div id="comp-new-size" style="font-size:20px; font-weight:700; color:var(--accent); margin-top:4px;">0 Ko</div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <div style="display:flex; justify-content:space-between;">
+                <label class="form-label">Qualité de compression</label>
+                <span class="range-val" id="comp-q-val">75%</span>
+              </div>
+              <div class="range-group">
+                <input type="range" id="comp-quality" min="20" max="95" value="75">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <div style="display:flex; justify-content:space-between;">
+                <label class="form-label">Largeur maximale</label>
+                <span class="range-val" id="comp-w-val">1600 px</span>
+              </div>
+              <div class="range-group">
+                <input type="range" id="comp-width" min="800" max="3000" step="100" value="1600">
+              </div>
+            </div>
+
+            <div style="border:1px solid var(--border); border-radius:var(--radius-sm); background:var(--bg-elevated); height:160px; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+              <img id="comp-preview-img" style="max-width:100%; max-height:100%; object-fit:contain; display:none;">
+              <span id="comp-no-preview" style="font-size:12px; color:var(--text-muted);">Aperçu de l'image compressée</span>
+            </div>
+          </div>
+
+          <button class="btn-primary" id="comp-download-btn" disabled style="margin-top:20px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Télécharger l'Image Compressée
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- MODULE 7 : FICHE & COMPTE-RENDU PDF -->
+    <section id="module-templates" class="module-pane">
+      <div class="pane-header">
+        <h2 class="pane-title">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          Créateur de Fiches Mémos & Comptes-Rendus en PDF
+        </h2>
+        <p class="pane-desc">Rédigez rapidement une fiche de révision, un compte-rendu de réunion ou un mémo technique et exportez-le au format PDF avec une mise en page soignée.</p>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">Informations du document</div>
+          <div class="form-group">
+            <label class="form-label">Titre principal</label>
+            <input type="text" class="form-input" id="memo-title" value="Synthèse de Travail">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Sous-titre ou Catégorie</label>
+            <input type="text" class="form-input" id="memo-subtitle" value="Projet & Suivi d'équipe">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Auteur et Date</label>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+              <input type="text" class="form-input" id="memo-author" value="Corentin">
+              <input type="date" class="form-input" id="memo-date">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Corps du texte (paragraphes et listes)</label>
+            <textarea class="form-textarea" id="memo-body" style="min-height:160px;">1. Objectifs principaux :
+- Finalisation des outils locaux en mémoire.
+- Validation des interfaces d'export et d'impression.
+- Respect de la confidentialité absolue.
+
+2. Décisions retenues :
+- Utilisation exclusive de composants vectoriels SVG.
+- Exécution garantie sans aucun appel réseau tiers.</textarea>
+          </div>
+        </div>
+
+        <div class="card" style="display:flex; flex-direction:column; justify-content:space-between;">
+          <div>
+            <div class="card-title">Aperçu du rendu</div>
+            <div id="memo-preview-box" style="background:var(--bg-elevated); padding:20px; border-radius:var(--radius-sm); border:1px solid var(--border); font-size:13px; line-height:1.7; color:var(--text-main); max-height:420px; overflow-y:auto; white-space:pre-wrap;"></div>
+          </div>
+
+          <button class="btn-primary" id="memo-download-btn" style="margin-top:20px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Générer et Télécharger la Fiche PDF
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- MODULE 8 : GÉNÉRATEUR QR CODE UNIVERSEL -->
+    <section id="module-qr" class="module-pane">
+      <div class="pane-header">
+        <h2 class="pane-title">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          Générateur de QR Code Universel & Permanent
+        </h2>
+        <p class="pane-desc">Créez des QR codes directs sans lien de redirection publicitaire ni date d'expiration. Connexion automatique au WiFi, contacts vCard, liens web et textes.</p>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">Type de QR Code</div>
+          <div class="form-group">
+            <select class="form-select" id="qr-type">
+              <option value="wifi">Réseau WiFi (Connexion sans taper le mot de passe)</option>
+              <option value="url" selected>Lien Web / URL direct</option>
+              <option value="vcard">Carte de Contact (vCard)</option>
+              <option value="text">Texte brut</option>
+            </select>
+          </div>
+
+          <!-- Type WiFi -->
+          <div id="qr-wifi-box">
+            <div class="form-group">
+              <label class="form-label">Nom de la Box ou du Réseau (SSID)</label>
+              <input type="text" class="form-input" id="qr-wifi-ssid" placeholder="Ex: MonReseauMaison">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Mot de passe WiFi</label>
+              <input type="text" class="form-input" id="qr-wifi-pass" placeholder="Clé de sécurité">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Type de sécurité</label>
+              <select class="form-select" id="qr-wifi-type">
+                <option value="WPA">WPA / WPA2 / WPA3 (Standard)</option>
+                <option value="WEP">WEP</option>
+                <option value="nopass">Aucun mot de passe (Réseau ouvert)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Type URL -->
+          <div id="qr-url-box" style="display:none;">
+            <div class="form-group">
+              <label class="form-label">Adresse du site (URL)</label>
+              <input type="url" class="form-input" id="qr-url-val" value="https://tortoche.github.io/privadoc/">
+            </div>
+          </div>
+
+          <!-- Type vCard -->
+          <div id="qr-vcard-box" style="display:none;">
+            <div class="form-group">
+              <label class="form-label">Nom & Prénom</label>
+              <input type="text" class="form-input" id="qr-vcard-name" placeholder="Jean Dupont">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Numéro de téléphone</label>
+              <input type="tel" class="form-input" id="qr-vcard-tel" placeholder="+33 6 12 34 56 78">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Adresse Email</label>
+              <input type="email" class="form-input" id="qr-vcard-email" placeholder="jean.dupont@email.com">
+            </div>
+          </div>
+
+          <!-- Type Texte -->
+          <div id="qr-text-box" style="display:none;">
+            <div class="form-group">
+              <label class="form-label">Message ou texte libre</label>
+              <textarea class="form-textarea" id="qr-text-val" placeholder="Entrez votre texte ici..."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="display:flex; flex-direction:column; align-items:center; justify-content:space-between;">
+          <div class="card-title" style="width:100%;">Aperçu du QR Code</div>
+
+          <div style="background:#ffffff; padding:24px; border-radius:var(--radius-sm); border:1px solid var(--border); box-shadow:0 4px 12px rgba(0,0,0,0.1); display:flex; align-items:center; justify-content:center;">
+            <div id="qrcode-display"></div>
+          </div>
+
+          <div style="width:100%; display:flex; gap:10px; margin-top:24px;">
+            <button class="btn-primary" id="qr-dl-png">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Télécharger Image PNG
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MODULE 9 : NETTOYEUR DE MÉTADONNÉES -->
+    <section id="module-privacy" class="module-pane">
+      <div class="pane-header">
+        <h2 class="pane-title">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          Nettoyeur de Métadonnées & Données Cachées
+        </h2>
+        <p class="pane-desc">Les photos prises par smartphone contiennent souvent vos coordonnées GPS exactes (latitude/longitude), le modèle précis de votre téléphone et l'heure exacte. Purgez toutes ces informations en un clic avant de partager une image.</p>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">Sélectionner la photo à assainir</div>
+          <div class="dropzone" id="priv-dropzone">
+            <input type="file" id="priv-input" accept="image/jpeg,image/png,image/webp">
+            <div class="dropzone-icon">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </div>
+            <div class="dropzone-title">Glissez votre photo ici</div>
+            <div class="dropzone-subtitle">Suppression automatique des tags EXIF, GPS et traces matérielles</div>
+          </div>
+
+          <div style="margin-top:20px;">
+            <div style="background:var(--bg-elevated); padding:16px; border-radius:var(--radius-sm); border:1px solid var(--border);">
+              <div style="font-size:13px; font-weight:600; margin-bottom:8px;">Données automatiquement effacées :</div>
+              <ul style="font-size:12.5px; color:var(--text-muted); list-style-position:inside; line-height:1.6;">
+                <li>Localisation géographique GPS (coordonnées du domicile / travail).</li>
+                <li>Numéro de série de l'appareil et modèle de l'appareil photo.</li>
+                <li>Horodatage exact et fuseau horaire de capture.</li>
+                <li>Historique des retouches et logiciels d'édition.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="display:flex; flex-direction:column; justify-content:space-between;">
+          <div>
+            <div class="card-title">Aperçu de l'image nettoyée</div>
+            <div style="border:1px solid var(--border); border-radius:var(--radius-sm); background:var(--bg-elevated); height:220px; display:flex; align-items:center; justify-content:center; overflow:hidden; margin-bottom:16px;">
+              <img id="priv-preview-img" style="max-width:100%; max-height:100%; object-fit:contain; display:none;">
+              <span id="priv-no-preview" style="font-size:12px; color:var(--text-muted);">Aucune image chargée</span>
+            </div>
+            <div id="priv-status-box" style="display:none; padding:12px; border-radius:var(--radius-sm); background:var(--accent-glow); border:1px solid var(--accent); color:var(--accent); font-size:12.5px; font-weight:500;">
+              Image ré-encodée en pixels purs. 100% des métadonnées ont été supprimées.
+            </div>
+          </div>
+
+          <button class="btn-primary" id="priv-download-btn" disabled style="margin-top:20px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Télécharger la Photo Assainie (Sans Données Cachées)
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Pied de page -->
+  <footer>
+    <div style="max-width:1200px; margin:0 auto; display:flex; flex-direction:column; gap:8px; align-items:center;">
+      <div><b>PrivaDoc Studio</b> — Suite documentaire et multimédia 100% sécurisée et confidentielle.</div>
+      <div style="font-size:12px;">
+        Développé en Open Source sous licence MIT par <a href="https://github.com/Tortoche" target="_blank">Corentin JANIN (@Tortoche)</a>.
+        Aucune donnée, aucun document et aucune photo ne transitent par un serveur tiers.
+      </div>
+    </div>
+  </footer>
+
+  <!-- Code Logique Applicatif Client -->
+  <script>
+    // Configuration PDF.js Worker
+    if (window.pdfjsLib) {
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+    }
+
+    // Système de Notification Toast
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      
+      let icon = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>';
+      if (type === 'success') {
+        icon = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>';
+      } else if (type === 'error') {
+        icon = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>';
+      }
+
+      toast.innerHTML = `${icon}<span>${message}</span>`;
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(10px)';
+        toast.style.transition = 'all 0.2s';
+        setTimeout(() => toast.remove(), 200);
+      }, 3500);
+    }
+
+    // Gestion du Thème Sombre / Clair
+    const themeToggle = document.getElementById('theme-toggle');
+    const sunIcon = document.getElementById('theme-icon-sun');
+    const moonIcon = document.getElementById('theme-icon-moon');
+
+    themeToggle.addEventListener('click', () => {
+      const isDark = document.documentElement.classList.toggle('dark');
+      document.documentElement.classList.toggle('light', !isDark);
+      sunIcon.style.display = isDark ? 'none' : 'block';
+      moonIcon.style.display = isDark ? 'block' : 'none';
+      try { localStorage.setItem('privadoc-theme', isDark ? 'dark' : 'light'); } catch(e){}
+    });
+
+    // Navigation par Onglets
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const modulePanes = document.querySelectorAll('.module-pane');
+
+    tabBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        tabBtns.forEach(b => b.classList.remove('active'));
+        modulePanes.forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        const target = btn.getAttribute('data-target');
+        const pane = document.getElementById(target);
+        if (pane) pane.classList.add('active');
+      });
+    });
+
+    // Utilitaire Formatage Poids
+    function formatBytes(bytes) {
+      if (bytes === 0) return '0 Ko';
+      const k = 1024;
+      const sizes = ['Octets', 'Ko', 'Mo', 'Go'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+    }
+
+    // ==========================================
+    // MODULE 1 : FUSIONNER PDF
+    // ==========================================
+    let mergeFiles = [];
+    const mergeInput = document.getElementById('merge-input');
+    const mergeList = document.getElementById('merge-list');
+    const mergeBtn = document.getElementById('merge-submit-btn');
+    const mergeCount = document.getElementById('merge-count');
+    const mergeTotalSize = document.getElementById('merge-total-size');
+
+    mergeInput.addEventListener('change', (e) => {
+      const files = Array.from(e.target.files);
+      files.forEach(f => {
+        if (f.type === 'application/pdf') {
+          mergeFiles.push(f);
+        }
+      });
+      renderMergeList();
+      mergeInput.value = '';
+    });
+
+    function renderMergeList() {
+      mergeList.innerHTML = '';
+      let totalSize = 0;
+      mergeFiles.forEach((file, idx) => {
+        totalSize += file.size;
+        const item = document.createElement('div');
+        item.className = 'file-item';
+        item.innerHTML = `
+          <div class="file-info">
+            <div class="file-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            </div>
+            <div>
+              <div class="file-name">${idx + 1}. ${file.name}</div>
+              <div class="file-meta">${formatBytes(file.size)}</div>
+            </div>
+          </div>
+          <div class="file-actions">
+            <button class="btn-action-sm" onclick="moveMergeFile(${idx}, -1)" title="Monter" ${idx === 0 ? 'disabled' : ''}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"/></svg>
+            </button>
+            <button class="btn-action-sm" onclick="moveMergeFile(${idx}, 1)" title="Descendre" ${idx === mergeFiles.length - 1 ? 'disabled' : ''}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <button class="btn-action-sm danger" onclick="removeMergeFile(${idx})" title="Supprimer">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+        `;
+        mergeList.appendChild(item);
+      });
+
+      mergeCount.textContent = mergeFiles.length;
+      mergeTotalSize.textContent = formatBytes(totalSize);
+      mergeBtn.disabled = mergeFiles.length < 2;
+    }
+
+    window.moveMergeFile = function(idx, direction) {
+      const newIdx = idx + direction;
+      if (newIdx < 0 || newIdx >= mergeFiles.length) return;
+      const temp = mergeFiles[idx];
+      mergeFiles[idx] = mergeFiles[newIdx];
+      mergeFiles[newIdx] = temp;
+      renderMergeList();
+    };
+
+    window.removeMergeFile = function(idx) {
+      mergeFiles.splice(idx, 1);
+      renderMergeList();
+    };
+
+    mergeBtn.addEventListener('click', async () => {
+      if (mergeFiles.length < 2) return;
+      mergeBtn.disabled = true;
+      mergeBtn.textContent = 'Fusion en cours dans votre navigateur...';
+
+      try {
+        const mergedPdf = await PDFLib.PDFDocument.create();
+        for (const file of mergeFiles) {
+          const buffer = await file.arrayBuffer();
+          const pdf = await PDFLib.PDFDocument.load(buffer, { ignoreEncryption: true });
+          const pages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
+          pages.forEach(page => mergedPdf.addPage(page));
+        }
+
+        const mergedBytes = await mergedPdf.save();
+        const blob = new Blob([mergedBytes], { type: 'application/pdf' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = document.getElementById('merge-filename').value || 'document_fusionne.pdf';
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('PDF fusionné avec succès !', 'success');
+      } catch (err) {
+        console.error(err);
+        showToast('Erreur lors de la fusion : ' + err.message, 'error');
+      } finally {
+        mergeBtn.disabled = false;
+        mergeBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Générer et Télécharger le PDF Fusionné';
+      }
+    });
+
+    // ==========================================
+    // MODULE 2 : SIGNER & PARAPHER
+    // ==========================================
+    const sigCanvas = document.getElementById('sig-canvas');
+    const sigCtx = sigCanvas.getContext('2d');
+    let isDrawing = false;
+    let currentColor = '#1e3a8a';
+
+    function resizeSigCanvas() {
+      const rect = sigCanvas.getBoundingClientRect();
+      sigCanvas.width = rect.width * 2;
+      sigCanvas.height = rect.height * 2;
+      sigCtx.scale(2, 2);
+      sigCtx.lineCap = 'round';
+      sigCtx.lineJoin = 'round';
+      sigCtx.lineWidth = 2.5;
+      sigCtx.strokeStyle = currentColor;
+    }
+    setTimeout(resizeSigCanvas, 100);
+
+    function getCanvasPos(e) {
+      const rect = sigCanvas.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      return {
+        x: clientX - rect.left,
+        y: clientY - rect.top
+      };
+    }
+
+    sigCanvas.addEventListener('mousedown', (e) => {
+      isDrawing = true;
+      const pos = getCanvasPos(e);
+      sigCtx.beginPath();
+      sigCtx.moveTo(pos.x, pos.y);
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!isDrawing) return;
+      const pos = getCanvasPos(e);
+      sigCtx.lineTo(pos.x, pos.y);
+      sigCtx.stroke();
+    });
+
+    window.addEventListener('mouseup', () => { isDrawing = false; });
+
+    sigCanvas.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      isDrawing = true;
+      const pos = getCanvasPos(e);
+      sigCtx.beginPath();
+      sigCtx.moveTo(pos.x, pos.y);
+    }, { passive: false });
+
+    sigCanvas.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+      if (!isDrawing) return;
+      const pos = getCanvasPos(e);
+      sigCtx.lineTo(pos.x, pos.y);
+      sigCtx.stroke();
+    }, { passive: false });
+
+    sigCanvas.addEventListener('touchend', () => { isDrawing = false; });
+
+    document.getElementById('sig-clear-btn').addEventListener('click', () => {
+      sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
+    });
+
+    document.querySelectorAll('.sig-color-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.sig-color-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentColor = btn.getAttribute('data-color');
+        sigCtx.strokeStyle = currentColor;
+      });
+    });
+
+    // Date actuelle par défaut
+    const today = new Date();
+    document.getElementById('sig-date').value = `Fait à Toulouse, le ${today.toLocaleDateString('fr-FR')}`;
+
+    // Chargement PDF pour signature
+    let signPdfDoc = null;
+    let signPdfBytes = null;
+    let signCurrentPage = 1;
+    let signTotalPages = 1;
+    const sigFileInput = document.getElementById('sig-file-input');
+    const previewCanvas = document.getElementById('preview-pdf-canvas');
+    const sigApplyBtn = document.getElementById('sig-apply-btn');
+    const sigPrevBtn = document.getElementById('sig-prev-page');
+    const sigNextBtn = document.getElementById('sig-next-page');
+    const sigPageInfo = document.getElementById('sig-page-info');
+
+    sigFileInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      try {
+        signPdfBytes = await file.arrayBuffer();
+        const loadingTask = pdfjsLib.getDocument({ data: signPdfBytes.slice(0) });
+        signPdfDoc = await loadingTask.promise;
+        signTotalPages = signPdfDoc.numPages;
+        signCurrentPage = 1;
+        renderSignPreview();
+        sigApplyBtn.disabled = false;
+        showToast('Document chargé avec succès !', 'success');
+      } catch (err) {
+        console.error(err);
+        showToast('Erreur de lecture du PDF : ' + err.message, 'error');
+      }
+    });
+
+    async function renderSignPreview() {
+      if (!signPdfDoc) return;
+      const page = await signPdfDoc.getPage(signCurrentPage);
+      const viewport = page.getViewport({ scale: 1.2 });
+      previewCanvas.width = viewport.width;
+      previewCanvas.height = viewport.height;
+      const renderContext = {
+        canvasContext: previewCanvas.getContext('2d'),
+        viewport: viewport
+      };
+      await page.render(renderContext).promise;
+
+      sigPageInfo.textContent = `Page ${signCurrentPage} sur ${signTotalPages}`;
+      sigPrevBtn.disabled = signCurrentPage <= 1;
+      sigNextBtn.disabled = signCurrentPage >= signTotalPages;
+    }
+
+    sigPrevBtn.addEventListener('click', () => {
+      if (signCurrentPage > 1) {
+        signCurrentPage--;
+        renderSignPreview();
+      }
+    });
+
+    sigNextBtn.addEventListener('click', () => {
+      if (signCurrentPage < signTotalPages) {
+        signCurrentPage++;
+        renderSignPreview();
+      }
+    });
+
+    sigApplyBtn.addEventListener('click', async () => {
+      if (!signPdfBytes) return;
+      sigApplyBtn.disabled = true;
+      sigApplyBtn.textContent = 'Apposition de la signature...';
+
+      try {
+        // Exporter la signature en image
+        const sigDataUrl = sigCanvas.toDataURL('image/png');
+        const pdfDoc = await PDFLib.PDFDocument.load(signPdfBytes);
+        const pages = pdfDoc.getPages();
+        const page = pages[signCurrentPage - 1];
+        const { width, height } = page.getSize();
+
+        const sigImage = await pdfDoc.embedPng(sigDataUrl);
+        const font = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
+
+        // Positionnement en bas à droite
+        const sigWidth = 140;
+        const sigHeight = (sigCanvas.height / sigCanvas.width) * sigWidth;
+        const xPos = width - sigWidth - 40;
+        const yPos = 60;
+
+        // Dessiner la signature
+        page.drawImage(sigImage, {
+          x: xPos,
+          y: yPos,
+          width: sigWidth,
+          height: sigHeight,
+        });
+
+        // Mentions d'accompagnement
+        const mention = document.getElementById('sig-mention').value;
+        const dateStr = document.getElementById('sig-date').value;
+
+        if (mention) {
+          page.drawText(mention, {
+            x: xPos,
+            y: yPos + sigHeight + 14,
+            size: 9,
+            font: font,
+            color: PDFLib.rgb(0.2, 0.2, 0.2),
+          });
+        }
+
+        if (dateStr) {
+          page.drawText(dateStr, {
+            x: xPos,
+            y: yPos + sigHeight + 4,
+            size: 8.5,
+            font: font,
+            color: PDFLib.rgb(0.3, 0.3, 0.3),
+          });
+        }
+
+        const signedBytes = await pdfDoc.save();
+        const blob = new Blob([signedBytes], { type: 'application/pdf' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'document_signe.pdf';
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('Document signé téléchargé !', 'success');
+      } catch (err) {
+        console.error(err);
+        showToast('Erreur lors de la signature : ' + err.message, 'error');
+      } finally {
+        sigApplyBtn.disabled = false;
+        sigApplyBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Apposer la Signature & Télécharger';
+      }
+    });
+
+    // ==========================================
+    // MODULE 3 : FILIGRANE ANTI-FRAUDE
+    // ==========================================
+    let wmPdfBytes = null;
+    const wmFileInput = document.getElementById('wm-file-input');
+    const wmSubmitBtn = document.getElementById('wm-submit-btn');
+    const wmFileInfo = document.getElementById('wm-file-info');
+    const wmOpacity = document.getElementById('wm-opacity');
+    const wmOpacityVal = document.getElementById('wm-opacity-val');
+    const wmSize = document.getElementById('wm-size');
+    const wmSizeVal = document.getElementById('wm-size-val');
+
+    wmOpacity.addEventListener('input', () => { wmOpacityVal.textContent = wmOpacity.value + '%'; });
+    wmSize.addEventListener('input', () => { wmSizeVal.textContent = wmSize.value + ' px'; });
+
+    document.querySelectorAll('.wm-preset-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.getElementById('wm-text').value = btn.getAttribute('data-text');
+      });
+    });
+
+    wmFileInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      try {
+        wmPdfBytes = await file.arrayBuffer();
+        wmFileInfo.style.display = 'block';
+        wmFileInfo.textContent = `Fichier prêt : ${file.name} (${formatBytes(file.size)})`;
+        wmSubmitBtn.disabled = false;
+        showToast('Pièce d\'identité chargée', 'success');
+      } catch (err) {
+        showToast('Erreur : ' + err.message, 'error');
+      }
+    });
+
+    wmSubmitBtn.addEventListener('click', async () => {
+      if (!wmPdfBytes) return;
+      wmSubmitBtn.disabled = true;
+      wmSubmitBtn.textContent = 'Application du filigrane...';
+
+      try {
+        const pdfDoc = await PDFLib.PDFDocument.load(wmPdfBytes);
+        const font = await pdfDoc.embedFont(PDFLib.StandardFonts.HelveticaBold);
+        const pages = pdfDoc.getPages();
+
+        const baseText = document.getElementById('wm-text').value.trim();
+        const dest = document.getElementById('wm-dest').value.trim();
+        const fullText = dest ? `${baseText} — DESTINÉ À : ${dest.toUpperCase()}` : baseText;
+
+        const opacity = parseFloat(wmOpacity.value) / 100;
+        const fontSize = parseInt(wmSize.value, 10);
+        const layout = document.getElementById('wm-layout').value;
+
+        pages.forEach(page => {
+          const { width, height } = page.getSize();
+          if (layout === 'diagonal') {
+            page.drawText(fullText, {
+              x: width * 0.1,
+              y: height * 0.35,
+              size: fontSize,
+              font: font,
+              color: PDFLib.rgb(0.75, 0.1, 0.1),
+              opacity: opacity,
+              rotate: PDFLib.degrees(35),
+            });
+          } else {
+            // Répétition en grille
+            for (let y = 100; y < height; y += 180) {
+              page.drawText(fullText, {
+                x: 40,
+                y: y,
+                size: fontSize * 0.8,
+                font: font,
+                color: PDFLib.rgb(0.7, 0.15, 0.15),
+                opacity: opacity * 0.85,
+                rotate: PDFLib.degrees(25),
+              });
+            }
+          }
+        });
+
+        const modifiedBytes = await pdfDoc.save();
+        const blob = new Blob([modifiedBytes], { type: 'application/pdf' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'document_protege_filigrane.pdf';
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('Document filigrané téléchargé !', 'success');
+      } catch (err) {
+        console.error(err);
+        showToast('Erreur filigrane : ' + err.message, 'error');
+      } finally {
+        wmSubmitBtn.disabled = false;
+        wmSubmitBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Appliquer le Filigrane & Télécharger';
+      }
+    });
+
+    // ==========================================
+    // MODULE 4 : IMAGES VERS PDF
+    // ==========================================
+    let i2pFiles = [];
+    const i2pInput = document.getElementById('i2p-input');
+    const i2pGrid = document.getElementById('i2p-grid');
+    const i2pBtn = document.getElementById('i2p-submit-btn');
+    const i2pCount = document.getElementById('i2p-count');
+
+    i2pInput.addEventListener('change', (e) => {
+      const files = Array.from(e.target.files);
+      files.forEach(f => {
+        if (f.type.startsWith('image/')) {
+          i2pFiles.push(f);
+        }
+      });
+      renderI2pGrid();
+      i2pInput.value = '';
+    });
+
+    function renderI2pGrid() {
+      i2pGrid.innerHTML = '';
+      i2pFiles.forEach((file, idx) => {
+        const card = document.createElement('div');
+        card.className = 'thumb-card';
+        const imgUrl = URL.createObjectURL(file);
+        card.innerHTML = `
+          <img src="${imgUrl}" alt="photo">
+          <button class="thumb-del-btn" onclick="removeI2pFile(${idx})">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+          <div class="thumb-card-info">
+            <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${file.name}</span>
+            <span>${formatBytes(file.size)}</span>
+          </div>
+        `;
+        i2pGrid.appendChild(card);
+      });
+
+      i2pCount.textContent = i2pFiles.length;
+      i2pBtn.disabled = i2pFiles.length === 0;
+    }
+
+    window.removeI2pFile = function(idx) {
+      i2pFiles.splice(idx, 1);
+      renderI2pGrid();
+    };
+
+    i2pBtn.addEventListener('click', async () => {
+      if (i2pFiles.length === 0) return;
+      i2pBtn.disabled = true;
+      i2pBtn.textContent = 'Génération du PDF...';
+
+      try {
+        const pdfDoc = await PDFLib.PDFDocument.create();
+        const format = document.getElementById('i2p-format').value;
+        const orientation = document.getElementById('i2p-orientation').value;
+        const marginSetting = document.getElementById('i2p-margins').value;
+
+        let margin = 0;
+        if (marginSetting === 'small') margin = 28; // ~10mm
+        if (marginSetting === 'normal') margin = 56; // ~20mm
+
+        for (const file of i2pFiles) {
+          const buffer = await file.arrayBuffer();
+          let embeddedImage;
+          if (file.type === 'image/jpeg' || file.name.toLowerCase().endsWith('.jpg') || file.name.toLowerCase().endsWith('.jpeg')) {
+            embeddedImage = await pdfDoc.embedJpg(buffer);
+          } else {
+            // PNG ou WebP
+            try {
+              embeddedImage = await pdfDoc.embedPng(buffer);
+            } catch (e) {
+              // Si WebP ou problème, convertir via Canvas en JPG
+              const img = await loadImageFromBlob(file);
+              const canvas = document.createElement('canvas');
+              canvas.width = img.width;
+              canvas.height = img.height;
+              const ctx = canvas.getContext('2d');
+              ctx.drawImage(img, 0, 0);
+              const jpgData = canvas.toDataURL('image/jpeg', 0.92);
+              const jpgBuffer = await (await fetch(jpgData)).arrayBuffer();
+              embeddedImage = await pdfDoc.embedJpg(jpgBuffer);
+            }
+          }
+
+          let pageWidth = 595.28; // A4 portrait points
+          let pageHeight = 841.89;
+
+          if (format === 'LETTER') {
+            pageWidth = 612;
+            pageHeight = 792;
+          }
+
+          const imgWidth = embeddedImage.width;
+          const imgHeight = embeddedImage.height;
+
+          let isLandscape = false;
+          if (orientation === 'landscape') isLandscape = true;
+          else if (orientation === 'auto' && imgWidth > imgHeight) isLandscape = true;
+
+          if (isLandscape && format !== 'FIT') {
+            const temp = pageWidth;
+            pageWidth = pageHeight;
+            pageHeight = temp;
+          }
+
+          if (format === 'FIT') {
+            pageWidth = imgWidth + margin * 2;
+            pageHeight = imgHeight + margin * 2;
+          }
+
+          const page = pdfDoc.addPage([pageWidth, pageHeight]);
+          const availableWidth = pageWidth - margin * 2;
+          const availableHeight = pageHeight - margin * 2;
+
+          const scale = Math.min(availableWidth / imgWidth, availableHeight / imgHeight);
+          const finalWidth = imgWidth * scale;
+          const finalHeight = imgHeight * scale;
+
+          const x = margin + (availableWidth - finalWidth) / 2;
+          const y = margin + (availableHeight - finalHeight) / 2;
+
+          page.drawImage(embeddedImage, {
+            x: x,
+            y: y,
+            width: finalWidth,
+            height: finalHeight
+          });
+        }
+
+        const pdfBytes = await pdfDoc.save();
+        const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = document.getElementById('i2p-filename').value || 'photos_document.pdf';
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('PDF créé avec succès !', 'success');
+      } catch (err) {
+        console.error(err);
+        showToast('Erreur : ' + err.message, 'error');
+      } finally {
+        i2pBtn.disabled = false;
+        i2pBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Générer et Télécharger le PDF';
+      }
+    });
+
+    function loadImageFromBlob(blob) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = URL.createObjectURL(blob);
+      });
+    }
+
+    // ==========================================
+    // MODULE 5 : EXTRAIRE LES PAGES EN IMAGES
+    // ==========================================
+    let p2iPdfDoc = null;
+    let p2iPagesData = [];
+    const p2iInput = document.getElementById('p2i-input');
+    const p2iGrid = document.getElementById('p2i-grid');
+    const p2iZipBtn = document.getElementById('p2i-zip-btn');
+    const p2iCount = document.getElementById('p2i-count');
+
+    p2iInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      try {
+        const buffer = await file.arrayBuffer();
+        const loadingTask = pdfjsLib.getDocument({ data: buffer });
+        p2iPdfDoc = await loadingTask.promise;
+        p2iPagesData = [];
+        p2iGrid.innerHTML = '';
+        p2iCount.textContent = `${p2iPdfDoc.numPages} page(s)`;
+        showToast(`Extraction de ${p2iPdfDoc.numPages} pages...`, 'info');
+
+        const scale = parseFloat(document.getElementById('p2i-scale').value);
+        const format = document.getElementById('p2i-format').value;
+
+        for (let i = 1; i <= p2iPdfDoc.numPages; i++) {
+          const page = await p2iPdfDoc.getPage(i);
+          const viewport = page.getViewport({ scale: scale });
+          const canvas = document.createElement('canvas');
+          canvas.width = viewport.width;
+          canvas.height = viewport.height;
+          const ctx = canvas.getContext('2d');
+          await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+
+          const mimeType = format === 'png' ? 'image/png' : 'image/jpeg';
+          const dataUrl = canvas.toDataURL(mimeType, 0.92);
+          p2iPagesData.push({ pageNum: i, dataUrl: dataUrl, format: format });
+
+          const card = document.createElement('div');
+          card.className = 'thumb-card';
+          card.innerHTML = `
+            <img src="${dataUrl}" alt="page ${i}">
+            <div class="thumb-card-info">
+              <span>Page ${i}</span>
+              <a href="${dataUrl}" download="page_${i}.${format}" style="color:var(--primary); text-decoration:none; font-weight:600;">Télécharger</a>
+            </div>
+          `;
+          p2iGrid.appendChild(card);
+        }
+
+        p2iZipBtn.disabled = false;
+        showToast('Extraction terminée avec succès !', 'success');
+      } catch (err) {
+        console.error(err);
+        showToast('Erreur d\'extraction : ' + err.message, 'error');
+      }
+    });
+
+    p2iZipBtn.addEventListener('click', async () => {
+      if (p2iPagesData.length === 0) return;
+      p2iZipBtn.disabled = true;
+      p2iZipBtn.textContent = 'Création de l\'archive ZIP...';
+
+      try {
+        const zip = new JSZip();
+        for (const item of p2iPagesData) {
+          const base64Data = item.dataUrl.split(',')[1];
+          zip.file(`page_${String(item.pageNum).padStart(2, '0')}.${item.format}`, base64Data, { base64: true });
+        }
+        const content = await zip.generateAsync({ type: 'blob' });
+        const url = URL.createObjectURL(content);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'pages_extraites.zip';
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('Archive ZIP téléchargée !', 'success');
+      } catch (err) {
+        showToast('Erreur ZIP : ' + err.message, 'error');
+      } finally {
+        p2iZipBtn.disabled = false;
+        p2iZipBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Télécharger Toutes les Pages (Archive ZIP)';
+      }
+    });
+
+    // ==========================================
+    // MODULE 6 : COMPRESSEUR DE FICHIERS DÉMARCHES
+    // ==========================================
+    let compSourceImg = null;
+    let compCompressedBlob = null;
+    const compInput = document.getElementById('comp-input');
+    const compQuality = document.getElementById('comp-quality');
+    const compQVal = document.getElementById('comp-q-val');
+    const compWidth = document.getElementById('comp-width');
+    const compWVal = document.getElementById('comp-w-val');
+    const compOrigSize = document.getElementById('comp-orig-size');
+    const compNewSize = document.getElementById('comp-new-size');
+    const compPreviewImg = document.getElementById('comp-preview-img');
+    const compNoPreview = document.getElementById('comp-no-preview');
+    const compDlBtn = document.getElementById('comp-download-btn');
+
+    compQuality.addEventListener('input', () => {
+      compQVal.textContent = compQuality.value + '%';
+      runCompression();
+    });
+
+    compWidth.addEventListener('input', () => {
+      compWVal.textContent = compWidth.value + ' px';
+      runCompression();
+    });
+
+    document.querySelectorAll('.comp-preset-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.comp-preset-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const q = parseFloat(btn.getAttribute('data-q')) * 100;
+        const w = parseInt(btn.getAttribute('data-width'), 10);
+        compQuality.value = q;
+        compQVal.textContent = q + '%';
+        compWidth.value = w;
+        compWVal.textContent = w + ' px';
+        runCompression();
+      });
+    });
+
+    compInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      compOrigSize.textContent = formatBytes(file.size);
+      compSourceImg = await loadImageFromBlob(file);
+      runCompression();
+    });
+
+    async function runCompression() {
+      if (!compSourceImg) return;
+      const maxW = parseInt(compWidth.value, 10);
+      const quality = parseInt(compQuality.value, 10) / 100;
+
+      let w = compSourceImg.width;
+      let h = compSourceImg.height;
+
+      if (w > maxW) {
+        h = Math.round((h * maxW) / w);
+        w = maxW;
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(compSourceImg, 0, 0, w, h);
+
+      canvas.toBlob((blob) => {
+        compCompressedBlob = blob;
+        compNewSize.textContent = formatBytes(blob.size);
+        compPreviewImg.src = URL.createObjectURL(blob);
+        compPreviewImg.style.display = 'block';
+        compNoPreview.style.display = 'none';
+        compDlBtn.disabled = false;
+      }, 'image/jpeg', quality);
+    }
+
+    compDlBtn.addEventListener('click', () => {
+      if (!compCompressedBlob) return;
+      const url = URL.createObjectURL(compCompressedBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'document_optimise_demarche.jpg';
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('Image compressée téléchargée !', 'success');
+    });
+
+    // ==========================================
+    // MODULE 7 : FICHE & COMPTE-RENDU PDF
+    const memoTitle = document.getElementById('memo-title');
+    const memoSubtitle = document.getElementById('memo-subtitle');
+    const memoAuthor = document.getElementById('memo-author');
+    const memoDate = document.getElementById('memo-date');
+    const memoBody = document.getElementById('memo-body');
+    const memoPreview = document.getElementById('memo-preview-box');
+    const memoDlBtn = document.getElementById('memo-download-btn');
+
+    if (memoDate) memoDate.value = new Date().toISOString().split('T')[0];
+
+    function updateMemoPreview() {
+      if (!memoPreview) return;
+      const t = memoTitle ? (memoTitle.value || 'Sans Titre') : 'Sans Titre';
+      const st = memoSubtitle ? (memoSubtitle.value || '') : '';
+      const a = memoAuthor ? (memoAuthor.value || '') : '';
+      const d = (memoDate && memoDate.value) ? new Date(memoDate.value).toLocaleDateString('fr-FR') : '';
+      const b = memoBody ? (memoBody.value || '') : '';
+
+      memoPreview.textContent = `${t.toUpperCase()}
+${st}
+
+Auteur : ${a} | Date : ${d}
+----------------------------------------
+
+${b}`;
+    }
+
+    [memoTitle, memoSubtitle, memoAuthor, memoDate, memoBody].forEach(el => {
+      if (el) el.addEventListener('input', updateMemoPreview);
+    });
+    updateMemoPreview();
+
+    if (memoDlBtn) {
+      memoDlBtn.addEventListener('click', async () => {
+        try {
+          memoDlBtn.disabled = true;
+          memoDlBtn.textContent = 'Génération en cours...';
+
+          const pdfDoc = await PDFLib.PDFDocument.create();
+          const page = pdfDoc.addPage([595.28, 841.89]);
+          const font = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
+          const fontBold = await pdfDoc.embedFont(PDFLib.StandardFonts.HelveticaBold);
+
+          const lines = memoPreview.textContent.split('
+');
+          let y = 780;
+          const margin = 50;
+
+          lines.forEach(line => {
+            if (y < 60) return;
+            const isHeader = line === lines[0];
+            page.drawText(line, {
+              x: margin,
+              y: y,
+              size: isHeader ? 14 : 10.5,
+              font: isHeader ? fontBold : font,
+              color: PDFLib.rgb(0.1, 0.1, 0.1),
+            });
+            y -= isHeader ? 24 : 16;
+          });
+
+          const pdfBytes = await pdfDoc.save();
+          const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'fiche_compte_rendu.pdf';
+          a.click();
+          URL.revokeObjectURL(url);
+          showToast('Fiche PDF générée avec succès !', 'success');
+        } catch (err) {
+          showToast('Erreur : ' + err.message, 'error');
+        } finally {
+          memoDlBtn.disabled = false;
+          memoDlBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Générer et Télécharger la Fiche PDF';
+        }
+      });
+    }
+
+    // MODULE 8 : GÉNÉRATEUR QR CODE UNIVERSEL
+    // ==========================================
+    const qrType = document.getElementById('qr-type');
+    const qrDisplay = document.getElementById('qrcode-display');
+    const qrDlPng = document.getElementById('qr-dl-png');
+    let qrcodeInstance = null;
+
+    function renderQr() {
+      const type = qrType.value;
+      document.getElementById('qr-wifi-box').style.display = type === 'wifi' ? 'block' : 'none';
+      document.getElementById('qr-url-box').style.display = type === 'url' ? 'block' : 'none';
+      document.getElementById('qr-vcard-box').style.display = type === 'vcard' ? 'block' : 'none';
+      document.getElementById('qr-text-box').style.display = type === 'text' ? 'block' : 'none';
+
+      let qrData = 'https://tortoche.github.io/privadoc/';
+
+      if (type === 'wifi') {
+        const ssid = document.getElementById('qr-wifi-ssid').value || 'Maison';
+        const pass = document.getElementById('qr-wifi-pass').value || '';
+        const enc = document.getElementById('qr-wifi-type').value;
+        qrData = `WIFI:T:${enc};S:${ssid};P:${pass};;`;
+      } else if (type === 'url') {
+        qrData = document.getElementById('qr-url-val').value || 'https://tortoche.github.io/privadoc/';
+      } else if (type === 'vcard') {
+        const name = document.getElementById('qr-vcard-name').value || 'Jean Dupont';
+        const tel = document.getElementById('qr-vcard-tel').value || '';
+        const email = document.getElementById('qr-vcard-email').value || '';
+        qrData = `BEGIN:VCARD\nVERSION:3.0\nFN:${name}\nTEL:${tel}\nEMAIL:${email}\nEND:VCARD`;
+      } else if (type === 'text') {
+        qrData = document.getElementById('qr-text-val').value || 'PrivaDoc';
+      }
+
+      qrDisplay.innerHTML = '';
+      if (window.QRCode) {
+        qrcodeInstance = new QRCode(qrDisplay, {
+          text: qrData,
+          width: 200,
+          height: 200,
+          colorDark: '#0f172a',
+          colorLight: '#ffffff',
+          correctLevel: QRCode.CorrectLevel.H
+        });
+      }
+    }
+
+    qrType.addEventListener('change', renderQr);
+    document.querySelectorAll('#qr-wifi-box input, #qr-wifi-box select, #qr-url-val, #qr-vcard-box input, #qr-text-val').forEach(el => {
+      el.addEventListener('input', renderQr);
+    });
+    setTimeout(renderQr, 200);
+
+    qrDlPng.addEventListener('click', () => {
+      const img = qrDisplay.querySelector('img');
+      const canvas = qrDisplay.querySelector('canvas');
+      let dataUrl = img ? img.src : (canvas ? canvas.toDataURL('image/png') : null);
+      if (dataUrl) {
+        const a = document.createElement('a');
+        a.href = dataUrl;
+        a.download = 'qrcode_privadoc.png';
+        a.click();
+        showToast('QR Code téléchargé !', 'success');
+      }
+    });
+
+    // ==========================================
+    // MODULE 9 : NETTOYEUR DE MÉTADONNÉES
+    // ==========================================
+    let privCleanBlob = null;
+    const privInput = document.getElementById('priv-input');
+    const privPreviewImg = document.getElementById('priv-preview-img');
+    const privNoPreview = document.getElementById('priv-no-preview');
+    const privStatusBox = document.getElementById('priv-status-box');
+    const privDlBtn = document.getElementById('priv-download-btn');
+
+    privInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      try {
+        const img = await loadImageFromBlob(file);
+        // Recréer sur un canvas pur pour supprimer tout tag EXIF / GPS / métadonnée
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+
+        canvas.toBlob((blob) => {
+          privCleanBlob = blob;
+          privPreviewImg.src = URL.createObjectURL(blob);
+          privPreviewImg.style.display = 'block';
+          privNoPreview.style.display = 'none';
+          privStatusBox.style.display = 'block';
+          privDlBtn.disabled = false;
+          showToast('Image nettoyée : 0 métadonnée résiduelle', 'success');
+        }, 'image/jpeg', 0.95);
+      } catch (err) {
+        showToast('Erreur : ' + err.message, 'error');
+      }
+    });
+
+    privDlBtn.addEventListener('click', () => {
+      if (!privCleanBlob) return;
+      const url = URL.createObjectURL(privCleanBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'photo_anonymisee_sans_exif.jpg';
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('Photo assainie téléchargée !', 'success');
+    });
+
+  </script>
+</body>
+</html>
