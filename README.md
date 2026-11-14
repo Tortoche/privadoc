@@ -12,6 +12,7 @@ PrivaDoc Studio permet d'effectuer toutes les manipulations courantes de documen
 - Génération d'attestations et documents administratifs types.
 - Création de QR Codes directs (WiFi, URL, contact vCard, texte) sans suivi ni expiration.
 - Nettoyage des métadonnées (EXIF, GPS, modèle d'appareil) avant diffusion.
+- Hébergement et partage de fichiers 100% gratuit : génération de liens de téléchargement directs et autonomes via GitHub Pages, GitHub API ou passerelle ouverte sans aucun abonnement ni serveur payant.
 
 ---
 
