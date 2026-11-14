@@ -6,16 +6,227 @@
   <title>PrivaDoc Studio — Boîte à Outils Documentaire 100% Privée & Locale</title>
   <meta name="description" content="Suite complète et gratuite de manipulation de documents et médias 100% exécutée dans votre navigateur. Aucune donnée n'est envoyée sur un serveur.">
   
+    <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/svg+xml" href="icon.svg">
+  <meta name="theme-color" content="#0b0f17">
   <!-- Polices Google -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
   <!-- Bibliothèques CDN 100% côté client -->
-  <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js">
+    // Enregistrement du Service Worker PWA (Fonctionnement 100% Hors-Ligne)
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').then((reg) => {
+          console.log('PWA Service Worker actif :', reg.scope);
+        }).catch((err) => {
+          console.log('Service Worker avertissement :', err);
+        });
+      });
+    }
+
+    // Raccourcis Clavier Globaux (Alt+1 à Alt+9 pour les onglets, Ctrl+Entrée pour exécuter)
+    window.addEventListener('keydown', (e) => {
+      if (e.altKey && e.key >= '1' && e.key <= '9') {
+        const tabIndex = parseInt(e.key, 10) - 1;
+        const allTabs = document.querySelectorAll('.tab-btn');
+        if (allTabs[tabIndex]) {
+          allTabs[tabIndex].click();
+          e.preventDefault();
+        }
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        const activePane = document.querySelector('.module-pane.active');
+        if (activePane) {
+          const mainBtn = activePane.querySelector('.btn-primary:not(:disabled)');
+          if (mainBtn) {
+            mainBtn.click();
+            e.preventDefault();
+          }
+        }
+      }
+    });
+
+    // Surveillance de l'état de connexion réseau
+    function updateNetworkStatus() {
+      const isOnline = navigator.onLine;
+      const badge = document.querySelector('.privacy-badge');
+      if (badge) {
+        if (!isOnline) {
+          badge.style.borderColor = 'var(--warning)';
+          badge.style.color = 'var(--warning)';
+          showToast('Mode 100% Hors-Ligne actif', 'info');
+        } else {
+          badge.style.borderColor = 'var(--accent)';
+          badge.style.color = 'var(--accent)';
+        }
+      }
+    }
+    window.addEventListener('online', updateNetworkStatus);
+    window.addEventListener('offline', updateNetworkStatus);
+
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js">
+    // Enregistrement du Service Worker PWA (Fonctionnement 100% Hors-Ligne)
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').then((reg) => {
+          console.log('PWA Service Worker actif :', reg.scope);
+        }).catch((err) => {
+          console.log('Service Worker avertissement :', err);
+        });
+      });
+    }
+
+    // Raccourcis Clavier Globaux (Alt+1 à Alt+9 pour les onglets, Ctrl+Entrée pour exécuter)
+    window.addEventListener('keydown', (e) => {
+      if (e.altKey && e.key >= '1' && e.key <= '9') {
+        const tabIndex = parseInt(e.key, 10) - 1;
+        const allTabs = document.querySelectorAll('.tab-btn');
+        if (allTabs[tabIndex]) {
+          allTabs[tabIndex].click();
+          e.preventDefault();
+        }
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        const activePane = document.querySelector('.module-pane.active');
+        if (activePane) {
+          const mainBtn = activePane.querySelector('.btn-primary:not(:disabled)');
+          if (mainBtn) {
+            mainBtn.click();
+            e.preventDefault();
+          }
+        }
+      }
+    });
+
+    // Surveillance de l'état de connexion réseau
+    function updateNetworkStatus() {
+      const isOnline = navigator.onLine;
+      const badge = document.querySelector('.privacy-badge');
+      if (badge) {
+        if (!isOnline) {
+          badge.style.borderColor = 'var(--warning)';
+          badge.style.color = 'var(--warning)';
+          showToast('Mode 100% Hors-Ligne actif', 'info');
+        } else {
+          badge.style.borderColor = 'var(--accent)';
+          badge.style.color = 'var(--accent)';
+        }
+      }
+    }
+    window.addEventListener('online', updateNetworkStatus);
+    window.addEventListener('offline', updateNetworkStatus);
+
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js">
+    // Enregistrement du Service Worker PWA (Fonctionnement 100% Hors-Ligne)
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').then((reg) => {
+          console.log('PWA Service Worker actif :', reg.scope);
+        }).catch((err) => {
+          console.log('Service Worker avertissement :', err);
+        });
+      });
+    }
+
+    // Raccourcis Clavier Globaux (Alt+1 à Alt+9 pour les onglets, Ctrl+Entrée pour exécuter)
+    window.addEventListener('keydown', (e) => {
+      if (e.altKey && e.key >= '1' && e.key <= '9') {
+        const tabIndex = parseInt(e.key, 10) - 1;
+        const allTabs = document.querySelectorAll('.tab-btn');
+        if (allTabs[tabIndex]) {
+          allTabs[tabIndex].click();
+          e.preventDefault();
+        }
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        const activePane = document.querySelector('.module-pane.active');
+        if (activePane) {
+          const mainBtn = activePane.querySelector('.btn-primary:not(:disabled)');
+          if (mainBtn) {
+            mainBtn.click();
+            e.preventDefault();
+          }
+        }
+      }
+    });
+
+    // Surveillance de l'état de connexion réseau
+    function updateNetworkStatus() {
+      const isOnline = navigator.onLine;
+      const badge = document.querySelector('.privacy-badge');
+      if (badge) {
+        if (!isOnline) {
+          badge.style.borderColor = 'var(--warning)';
+          badge.style.color = 'var(--warning)';
+          showToast('Mode 100% Hors-Ligne actif', 'info');
+        } else {
+          badge.style.borderColor = 'var(--accent)';
+          badge.style.color = 'var(--accent)';
+        }
+      }
+    }
+    window.addEventListener('online', updateNetworkStatus);
+    window.addEventListener('offline', updateNetworkStatus);
+
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js">
+    // Enregistrement du Service Worker PWA (Fonctionnement 100% Hors-Ligne)
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').then((reg) => {
+          console.log('PWA Service Worker actif :', reg.scope);
+        }).catch((err) => {
+          console.log('Service Worker avertissement :', err);
+        });
+      });
+    }
+
+    // Raccourcis Clavier Globaux (Alt+1 à Alt+9 pour les onglets, Ctrl+Entrée pour exécuter)
+    window.addEventListener('keydown', (e) => {
+      if (e.altKey && e.key >= '1' && e.key <= '9') {
+        const tabIndex = parseInt(e.key, 10) - 1;
+        const allTabs = document.querySelectorAll('.tab-btn');
+        if (allTabs[tabIndex]) {
+          allTabs[tabIndex].click();
+          e.preventDefault();
+        }
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        const activePane = document.querySelector('.module-pane.active');
+        if (activePane) {
+          const mainBtn = activePane.querySelector('.btn-primary:not(:disabled)');
+          if (mainBtn) {
+            mainBtn.click();
+            e.preventDefault();
+          }
+        }
+      }
+    });
+
+    // Surveillance de l'état de connexion réseau
+    function updateNetworkStatus() {
+      const isOnline = navigator.onLine;
+      const badge = document.querySelector('.privacy-badge');
+      if (badge) {
+        if (!isOnline) {
+          badge.style.borderColor = 'var(--warning)';
+          badge.style.color = 'var(--warning)';
+          showToast('Mode 100% Hors-Ligne actif', 'info');
+        } else {
+          badge.style.borderColor = 'var(--accent)';
+          badge.style.color = 'var(--accent)';
+        }
+      }
+    }
+    window.addEventListener('online', updateNetworkStatus);
+    window.addEventListener('offline', updateNetworkStatus);
+
+  </script>
 
   <style>
     :root {
@@ -1978,12 +2189,19 @@
         const imgUrl = URL.createObjectURL(file);
         card.innerHTML = `
           <img src="${imgUrl}" alt="photo">
-          <button class="thumb-del-btn" onclick="removeI2pFile(${idx})">
+          <button class="thumb-del-btn" onclick="removeI2pFile(${idx})" title="Supprimer">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
-          <div class="thumb-card-info">
-            <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${file.name}</span>
-            <span>${formatBytes(file.size)}</span>
+          <div class="thumb-card-info" style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:60px;">${idx + 1}. ${file.name}</span>
+            <div style="display:flex; gap:3px;">
+              <button class="btn-action-sm" style="width:22px; height:22px; padding:0;" onclick="moveI2pFile(${idx}, -1)" ${idx === 0 ? 'disabled' : ''} title="Déplacer à gauche">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+              </button>
+              <button class="btn-action-sm" style="width:22px; height:22px; padding:0;" onclick="moveI2pFile(${idx}, 1)" ${idx === i2pFiles.length - 1 ? 'disabled' : ''} title="Déplacer à droite">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+              </button>
+            </div>
           </div>
         `;
         i2pGrid.appendChild(card);
@@ -1992,6 +2210,15 @@
       i2pCount.textContent = i2pFiles.length;
       i2pBtn.disabled = i2pFiles.length === 0;
     }
+
+    window.moveI2pFile = function(idx, dir) {
+      const newIdx = idx + dir;
+      if (newIdx < 0 || newIdx >= i2pFiles.length) return;
+      const tmp = i2pFiles[idx];
+      i2pFiles[idx] = i2pFiles[newIdx];
+      i2pFiles[newIdx] = tmp;
+      renderI2pGrid();
+    };
 
     window.removeI2pFile = function(idx) {
       i2pFiles.splice(idx, 1);
@@ -2472,6 +2699,58 @@ ${b}`;
       URL.revokeObjectURL(url);
       showToast('Photo assainie téléchargée !', 'success');
     });
+
+  
+    // Enregistrement du Service Worker PWA (Fonctionnement 100% Hors-Ligne)
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').then((reg) => {
+          console.log('PWA Service Worker actif :', reg.scope);
+        }).catch((err) => {
+          console.log('Service Worker avertissement :', err);
+        });
+      });
+    }
+
+    // Raccourcis Clavier Globaux (Alt+1 à Alt+9 pour les onglets, Ctrl+Entrée pour exécuter)
+    window.addEventListener('keydown', (e) => {
+      if (e.altKey && e.key >= '1' && e.key <= '9') {
+        const tabIndex = parseInt(e.key, 10) - 1;
+        const allTabs = document.querySelectorAll('.tab-btn');
+        if (allTabs[tabIndex]) {
+          allTabs[tabIndex].click();
+          e.preventDefault();
+        }
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        const activePane = document.querySelector('.module-pane.active');
+        if (activePane) {
+          const mainBtn = activePane.querySelector('.btn-primary:not(:disabled)');
+          if (mainBtn) {
+            mainBtn.click();
+            e.preventDefault();
+          }
+        }
+      }
+    });
+
+    // Surveillance de l'état de connexion réseau
+    function updateNetworkStatus() {
+      const isOnline = navigator.onLine;
+      const badge = document.querySelector('.privacy-badge');
+      if (badge) {
+        if (!isOnline) {
+          badge.style.borderColor = 'var(--warning)';
+          badge.style.color = 'var(--warning)';
+          showToast('Mode 100% Hors-Ligne actif', 'info');
+        } else {
+          badge.style.borderColor = 'var(--accent)';
+          badge.style.color = 'var(--accent)';
+        }
+      }
+    }
+    window.addEventListener('online', updateNetworkStatus);
+    window.addEventListener('offline', updateNetworkStatus);
 
   </script>
 </body>
