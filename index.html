@@ -1472,6 +1472,17 @@
     const themeToggle = document.getElementById('theme-toggle');
     const sunIcon = document.getElementById('theme-icon-sun');
     const moonIcon = document.getElementById('theme-icon-moon');
+    // Initialisation du Thème depuis le stockage local
+    try {
+      const savedTheme = localStorage.getItem('privadoc-theme');
+      if (savedTheme === 'light') {
+        document.documentElement.classList.remove('dark');
+        document.documentElement.classList.add('light');
+        if (sunIcon) sunIcon.style.display = 'block';
+        if (moonIcon) moonIcon.style.display = 'none';
+      }
+    } catch (e) {}
+
 
     themeToggle.addEventListener('click', () => {
       const isDark = document.documentElement.classList.toggle('dark');
@@ -1479,6 +1490,23 @@
       sunIcon.style.display = isDark ? 'none' : 'block';
       moonIcon.style.display = isDark ? 'block' : 'none';
       try { localStorage.setItem('privadoc-theme', isDark ? 'dark' : 'light'); } catch(e){}
+    });
+
+    
+    // Gestion universelle du Drag & Drop pour toutes les zones
+    document.querySelectorAll('.dropzone').forEach(dropzone => {
+      ['dragenter', 'dragover'].forEach(evtName => {
+        dropzone.addEventListener(evtName, (e) => {
+          e.preventDefault();
+          dropzone.classList.add('dragover');
+        });
+      });
+      ['dragleave', 'drop'].forEach(evtName => {
+        dropzone.addEventListener(evtName, (e) => {
+          e.preventDefault();
+          dropzone.classList.remove('dragover');
+        });
+      });
     });
 
     // Navigation par Onglets
@@ -2298,8 +2326,7 @@ ${b}`;
           const font = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
           const fontBold = await pdfDoc.embedFont(PDFLib.StandardFonts.HelveticaBold);
 
-          const lines = memoPreview.textContent.split('
-');
+          const lines = memoPreview.textContent.split('\n');
           let y = 780;
           const margin = 50;
 
